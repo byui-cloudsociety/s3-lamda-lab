@@ -5,9 +5,8 @@
 1. Navigate to the S3 service in your AWS console
 2. Click "Create bucket"
 3. Enter a unique bucket name (e.g., `your-name-file-storage-lab-[random-number]`)
-4. Choose your preferred region
-5. Under "Block Public Access settings," keep all options checked
-7. Click "Create bucket"
+4. Under "Block Public Access settings," keep all options checked
+5. Click "Create bucket"
 
 ### 1.2 Configure CORS (Cross-Origin Resource Sharing)
 
@@ -35,14 +34,14 @@
 2. Click "Create function"
 3. Choose "Author from scratch"
 4. Function name: `file-upload-function`
-5. Runtime: Python 3.9 or later
+5. Runtime: Python 3.13 or later
 6. Under "Change default execution role," select "Use an existing role"
 7. Choose **LabRole** from the dropdown
 8. Click "Create function"
 
 ### 2.2 Upload Function Code
 
-Replace the default code with:
+1. Replace the default code with:
 
 ```python
 import json
@@ -133,6 +132,8 @@ def lambda_handler(event, context):
 
 **Important:** Replace `your-bucket-name-here` with your actual bucket name.
 
+2. Then click the "Deploy" button 
+
 ### 2.3 Create File Download Lambda Function
 
 1. Create another function named `file-download-function`
@@ -220,10 +221,12 @@ def lambda_handler(event, context):
             })
         }
 ```
+**Important:** Replace `your-bucket-name-here` with your actual bucket name.
 
+4. Then click the "Deploy" button
 ### 2.4 Create File List Lambda Function
 
-Create a third function named `file-list-function` using **LabRole** with this code:
+1. Create a third function named `file-list-function` using **LabRole** with this code:
 
 ```python
 import json
@@ -281,6 +284,9 @@ def lambda_handler(event, context):
             })
         }
 ```
+**Important:** Replace `your-bucket-name-here` with your actual bucket name.
+
+2. Then click the "Deploy" button
 
 ## Step 3: Create API Gateway
 
@@ -299,55 +305,54 @@ def lambda_handler(event, context):
 
 #### Create Upload Endpoint
 
-1. Click "Actions" → "Create Resource"
+1. Click "Create Resource"
 2. Resource Name: `upload`
-3. Resource Path: `/upload`
-4. Click "Create Resource"
+3. Click "Create Resource"
 
 5. Select the `/upload` resource
-6. Click "Actions" → "Create Method"
-7. Choose "POST" from dropdown and click the checkmark
+6. Click "Create Method"
+7. Choose "POST" from dropdown
 8. Integration type: Lambda Function
-9. Use Lambda Proxy integration: ✓ (checked)
+9. Use Lambda Proxy integration
 10. Lambda Region: Your region
 11. Lambda Function: `file-upload-function`
-12. Click "Save" and "OK" to give API Gateway permission
+12. Click "Create Method"
 
 #### Create Download Endpoint
 
-1. Click "Actions" → "Create Resource"
+1. Click "Create Resource"
 2. Resource Name: `download`
-3. Resource Path: `/download`
+3. Resource Path: `/`
 4. Click "Create Resource"
 
 5. Select the `/download` resource
-6. Click "Actions" → "Create Resource" (sub-resource)
-7. Resource Name: `filename`
-8. Resource Path: `{filename}`
+6. Click "Create Resource" 
+7. Resource Name: `{filename}`
+8. Resource Path: `/download`
 9. Click "Create Resource"
 
 10. Select the `/{filename}` resource
-11. Click "Actions" → "Create Method"
-12. Choose "GET" and click checkmark
+11. Click "Create Method"
+12. Choose "GET" 
 13. Integration type: Lambda Function
-14. Use Lambda Proxy integration: ✓ (checked)
+14. Use Lambda Proxy integration
 15. Lambda Function: `file-download-function`
-16. Click "Save" and "OK"
+16. Click "Create Method"
 
 #### Create List Files Endpoint
 
 1. Click "Actions" → "Create Resource"
 2. Resource Name: `files`
-3. Resource Path: `/files`
+3. Resource Path: `/`
 4. Click "Create Resource"
 
 5. Select the `/files` resource
-6. Click "Actions" → "Create Method"
-7. Choose "GET" and click checkmark
-8. Integration type: Lambda Function
-9. Use Lambda Proxy integration: ✓ (checked)
+6. Click "Create Method"
+7. Choose "GET"
+8. Integration type
+9. Use Lambda Proxy integration
 10. Lambda Function: `file-list-function`
-11. Click "Save" and "OK"
+11. Click "Create Method"
 
 ### 3.3 Enable CORS
 
@@ -356,50 +361,55 @@ For each method (POST /upload, GET /download/{filename}, GET /files):
 1. Select the method
 2. Click "Actions" → "Enable CORS"
 3. Keep default settings
-4. Click "Enable CORS and replace existing CORS headers"
-
+4. Click "Save"
 ### 3.4 Deploy the API
 
-1. Click "Actions" → "Deploy API"
+1. Click "Deploy API"
 2. Deployment stage: New Stage
 3. Stage name: `prod`
 4. Click "Deploy"
-5. Note the Invoke URL - you'll need this for testing
+5. Copy the Invoke URL 
 
-## Step 4: Test Your API
+## Step 4: Test Your API Using Postman
 
-### 4.1 Test File Upload
+### 4.1 Get Your API Base URL
 
-Use a tool like Postman or curl to test. First, encode your test content to base64:
+### 4.2 Test File Upload
 
-```bash
-echo "Hello World!" | base64
+1. Open Postman and create a new request
+2. Set method to **POST**
+3. Enter URL: `https://your-api-id.execute-api.region.amazonaws.com/prod/upload`
+4. In the **Headers** tab, add:
+   - Key: `Content-Type`
+   - Value: `application/json`
+5. In the **Body** tab, select **raw** and **JSON**, then enter:
+
+```json
+{
+  "filename": "test.txt",
+  "content": "SGVsbG8gV29ybGQh"
+}
 ```
 
-This should return: `SGVsbG8gV29ybGQhCg==`
+6. Click **Send**
 
-Then test the upload:
+The content "SGVsbG8gV29ybGQh" is "Hello World!" encoded in base64.
 
-```bash
-curl -X POST https://your-api-id.execute-api.region.amazonaws.com/prod/upload \
-  -H "Content-Type: application/json" \
-  -d '{
-    "filename": "test.txt",
-    "content": "SGVsbG8gV29ybGQhCg=="
-  }'
-```
+### 4.3 Test File List
 
-### 4.2 Test File List
+1. Create a new request in Postman
+2. Set method to **GET**
+3. Enter URL: `https://your-api-id.execute-api.region.amazonaws.com/prod/files`
+4. Click **Send**
 
-```bash
-curl https://your-api-id.execute-api.region.amazonaws.com/prod/files
-```
+### 4.4 Test File Download
 
-### 4.3 Test File Download
+1. Create a new request in Postman
+2. Set method to **GET**
+3. Enter URL: `https://your-api-id.execute-api.region.amazonaws.com/prod/download/test.txt`
+4. Click **Send**
 
-```bash
-curl https://your-api-id.execute-api.region.amazonaws.com/prod/download/test.txt
-```
+**Note:** Replace `your-api-id.execute-api.region.amazonaws.com` with your actual API Gateway URL from Step 3.4.
 
 ## Step 5: Monitor and Debug
 
