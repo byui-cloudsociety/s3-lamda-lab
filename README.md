@@ -370,46 +370,43 @@ For each method (POST /upload, GET /download/{filename}, GET /files):
 4. Click "Deploy"
 5. Copy the Invoke URL 
 
-## Step 4: Test Your API Using Postman
 
-### 4.1 Get Your API Base URL
+## Step 4: Test Your API
 
-### 4.2 Test File Upload
+### 4.1 Test File Upload
 
-1. Open Postman and create a new request
-2. Set method to **POST**
-3. Enter URL: `https://your-api-id.execute-api.region.amazonaws.com/prod/upload`
-4. In the **Headers** tab, add:
-   - Key: `Content-Type`
-   - Value: `application/json`
-5. In the **Body** tab, select **raw** and **JSON**, then enter:
+Use a tool like Postman or curl to test. First, encode your test content to base64:
 
-```json
-{
-  "filename": "test.txt",
-  "content": "SGVsbG8gV29ybGQh"
-}
+```bash
+echo "Hello World!" | base64
 ```
 
-6. Click **Send**
+This should return: `SGVsbG8gV29ybGQhCg==`
 
-The content "SGVsbG8gV29ybGQh" is "Hello World!" encoded in base64.
+Then test the upload:
 
-### 4.3 Test File List
+```bash
+curl -X POST https://your-api-id.execute-api.region.amazonaws.com/prod/upload \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename": "test.txt",
+    "content": "SGVsbG8gV29ybGQhCg=="
+  }'
+```
 
-1. Create a new request in Postman
-2. Set method to **GET**
-3. Enter URL: `https://your-api-id.execute-api.region.amazonaws.com/prod/files`
-4. Click **Send**
+### 4.2 Test File List
 
-### 4.4 Test File Download
+```bash
+curl https://your-api-id.execute-api.region.amazonaws.com/prod/files
+```
 
-1. Create a new request in Postman
-2. Set method to **GET**
-3. Enter URL: `https://your-api-id.execute-api.region.amazonaws.com/prod/download/test.txt`
-4. Click **Send**
+### 4.3 Test File Download
 
-**Note:** Replace `your-api-id.execute-api.region.amazonaws.com` with your actual API Gateway URL from Step 3.4.
+```bash
+curl https://your-api-id.execute-api.region.amazonaws.com/prod/download/test.txt
+```
+
+
 
 ## Step 5: Monitor and Debug
 
