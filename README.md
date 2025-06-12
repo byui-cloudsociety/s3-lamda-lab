@@ -6,8 +6,7 @@
 2. Click "Create bucket"
 3. Enter a unique bucket name (e.g., `your-name-file-storage-lab-[random-number]`)
 4. Choose your preferred region
-5. Under "Block Public Access settings," keep all options checked for security
-6. Enable versioning if desired
+5. Under "Block Public Access settings," keep all options checked
 7. Click "Create bucket"
 
 ### 1.2 Configure CORS (Cross-Origin Resource Sharing)
